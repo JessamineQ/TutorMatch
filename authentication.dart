@@ -10,6 +10,7 @@ enum ApplicationLoginState {
   loggedIn,
 }
 
+//set up user authentication
 class Authentication extends StatelessWidget {
   const Authentication({
     required this.loginState,
@@ -115,6 +116,118 @@ final ApplicationLoginState loginState;
     }
   }
 
+//dialog to show when errors are encountered
+ void _showErrorDialog(BuildContext context, String title, Exception e) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 24),
+          ),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  '${(e as dynamic).message}',
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            StyledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'OK',
+                style: TextStyle(color: Colors.deepPurple),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
 
+class EmailForm extends StatefulWidget {
+  const EmailForm({required this.callback, super.key});
+  final void Function(String email) callback;
+  @override
+  State<EmailForm> createState() => _EmailFormState();
+}
 
- 
+class _EmailFormState extends State<EmailForm> {
+  final _formKey = GlobalKey<FormState>(debugLabel: '_EmailFormState');
+  final _controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Header('Sign in with email'),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: TextFormField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      hintText: 'Enter your email',
+                    ),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Enter your email address to continue';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16.0, horizontal: 30),
+                      child: StyledButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            widget().callback(_controller.text);
+                          }
+                        },
+                        child: const Text('NEXT'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class RegisterForm extends StatefulWidget {
+  const RegisterForm({
+    required this.registerAccount,
+    required this.cancel,
+    required this.email,
+    super.key,
+  });
+  final String email;
+  final void Function(String email, String displayName, String password)
+      registerAccount;
+  final void Function() cancel;
+  @override
+  State<RegisterForm> createState() => _RegisterFormState();
+}
